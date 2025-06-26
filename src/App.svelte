@@ -1,10 +1,15 @@
 <script lang="ts">
+  import {
+    getSupportedVideoFormats,
+    getFileExtensionFromFormat,
+  } from "./lib/utils.js";
+  import PromotionalContent from "./lib/PromotionalContent.svelte";
+
   type WorkflowState =
     | "FILE_SELECTION"
     | "OPTIONS_SELECTION"
     | "CONVERTING"
-    | "COMPLETED"
-    | "ERROR";
+    | "COMPLETED";
   let workflowState = $state<WorkflowState>("FILE_SELECTION");
   let svgFile = $state<FileList | null>(null);
   let width = $state(800);
@@ -14,6 +19,8 @@
   let duration = $state(5000);
   let framerate = $state(30);
   let background = $state("#FFFFFF");
+  let supportedFormats = getSupportedVideoFormats();
+  let outputFormat = $state(supportedFormats[0]);
 
   let imgEl = $state<HTMLImageElement | null>(null);
   let canvasEl = $state<HTMLCanvasElement | null>(null);
@@ -80,7 +87,6 @@
     workflowState = "CONVERTING";
     conversionProgress = 0;
     convertToVideo().then((videoBlob) => {
-      console.log("Video conversion completed", videoBlob);
       downloadVideo(videoBlob);
       conversionProgress = 100;
       workflowState = "COMPLETED";
@@ -92,33 +98,28 @@
       if (!imgEl || !canvasEl) return;
       const ctx = canvasEl.getContext("2d");
       if (!ctx) return;
+
       const chunks: Blob[] = [];
       const stream = canvasEl.captureStream(framerate);
-      const recorder = new MediaRecorder(stream, { mimeType: "video/mp4" });
+      const recorder = new MediaRecorder(stream, { mimeType: outputFormat });
       initTime = null;
+
       recorder.ondataavailable = (event) => {
-        const blob = event.data;
-        if (blob && blob.size) {
-          chunks.push(blob);
-        }
-      };
-      recorder.onstop = () => {
-        resolve(new Blob(chunks, { type: "video/mp4" }));
+        chunks.push(event.data);
       };
 
-      canvasEl.width = width;
-      canvasEl.height = height;
-      imgEl.width = width;
-      imgEl.height = height;
-      ctx.fillStyle = background;
-      ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(imgEl, 0, 0, width, height);
+      recorder.onstop = () => {
+        resolve(new Blob(chunks, { type: outputFormat }));
+      };
 
       const renderLoop = (time?: number) => {
         render();
         if (initTime == null) {
-          if (!time) recorder.start();
-          else initTime = time;
+          if (!time) {
+            recorder.start();
+          } else {
+            initTime = time;
+          }
         } else if (time && time - initTime > duration) {
           recorder.stop();
           return;
@@ -127,6 +128,7 @@
           const elapsed = time - initTime;
           conversionProgress = Math.min((elapsed / duration) * 100, 99);
         }
+
         requestAnimationFrame(renderLoop);
       };
 
@@ -137,16 +139,35 @@
         ctx.drawImage(imgEl, 0, 0, width, height);
       };
 
+      canvasEl.width = width;
+      canvasEl.height = height;
+      imgEl.width = width;
+      imgEl.height = height;
+      ctx.fillStyle = background;
+
       imgEl.onload = () => {
         renderLoop();
       };
-      imgEl.src = URL.createObjectURL(getFile()!);
+
+      // Workaround for chrome bug where SVG including foreignObject is tainted
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=294129
+      // https://stackoverflow.com/questions/50824012/why-does-this-svg-holding-blob-url-taint-the-canvas-in-chrome
+      const reader = new FileReader();
+      reader.readAsDataURL(getFile()!);
+      reader.onload = (e) => {
+        if (!e.target || !e.target.result || !imgEl) {
+          return;
+        }
+        imgEl.src = e.target.result as string;
+      };
     });
 
   const downloadVideo = (blob: Blob) => {
+    const extension = getFileExtensionFromFormat(outputFormat);
+
     const generatedFile = new File(
       [new Blob([blob], { type: "application/octet-stream" })],
-      getFile()!.name.replace(/\.svgz?$/i, ".mp4")
+      getFile()!.name.replace(/\.svgz?$/i, `.${extension}`)
     );
     const a = document.createElement("a");
     a.download = generatedFile.name;
@@ -158,8 +179,11 @@
 </script>
 
 <main>
-  <div class="flex flex-col items-center">
-    <h1 class="m-8 text-5xl text-gray-900">Animated SVG to Video</h1>
+  <div class="flex flex-col items-center justify-center">
+    <h1 class="m-8 text-5xl text-gray-900 text-center">
+      Animated SVG to Video
+    </h1>
+
     {#if workflowState === "OPTIONS_SELECTION" || workflowState === "CONVERTING" || workflowState === "COMPLETED"}
       <div class="w-1/2 p-4 flex justify-between items-center">
         <p class="text-sm font-medium text-gray-700">
@@ -195,11 +219,35 @@
         <p class="text-sm text-gray-600 mt-2">
           Converting... {Math.round(conversionProgress)}%
         </p>
+        <div
+          class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4 w-1/2"
+        >
+          <div class="flex items-center">
+            <svg
+              class="w-5 h-5 text-yellow-600 mr-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <div class="text-sm text-yellow-800">
+              <strong class="font-medium">Stay on this page!</strong>
+              <p class="mt-1">
+                Keep this tab active while converting. Switching tabs or
+                minimizing may affect the rendering process.
+              </p>
+            </div>
+          </div>
+        </div>
       {/if}
       {#if workflowState === "COMPLETED"}
         <div class="mt-4 flex flex-col items-center">
           <p class="text-green-600 font-medium mb-4">
-            ✓ Conversion completed! Video downloaded.
+            ✓ Conversion completed! File downloaded.
           </p>
           <button
             type="button"
@@ -211,6 +259,7 @@
         </div>
       {/if}
     {/if}
+
     <form class="w-1/2 flex flex-col items-center gap-4 p-4">
       <label
         for="svg"
@@ -219,21 +268,7 @@
         <span
           class="absolute top-0 left-0 w-full h-full flex items-center justify-center space-x-2"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-6 h-6 text-gray-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
-          <span class="font-medium text-gray-600">
+          <span class="font-medium text-gray-600 text-center">
             Drop or
             <span class="text-blue-600 underline">browse</span>
             for SVG file
@@ -347,6 +382,19 @@
             class="w-full rounded shadow-sm"
           />
         </label>
+        <label for="output-format" class="flex flex-col w-3/4">
+          <span class="text-sm font-medium text-gray-700">Output format</span>
+          <select
+            id="output-format"
+            name="output-format"
+            bind:value={outputFormat}
+            class="mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm"
+          >
+            {#each supportedFormats as format}
+              <option value={format}>{format}</option>
+            {/each}
+          </select>
+        </label>
         <button
           type="button"
           onclick={handleConvert}
@@ -354,12 +402,19 @@
           aria-disabled={workflowState === "CONVERTING"}
           class="inline-block rounded-sm bg-indigo-600 px-8 py-3 text-sm font-medium text-white transition hover:scale-110 hover:shadow-xl focus:ring-3 focus:outline-hidden"
         >
-          Convert to Video
+          Convert
         </button>
       </div>
     </form>
-    <!-- svelte-ignore a11y_missing_attribute -->
-    <img bind:this={imgEl} class="opacity-0" />
-    <canvas bind:this={canvasEl} class="hidden"></canvas>
+
+    {#if workflowState === "FILE_SELECTION"}
+      <PromotionalContent />
+    {/if}
+
+    {#if workflowState === "CONVERTING" || workflowState === "OPTIONS_SELECTION"}
+      <!-- svelte-ignore a11y_missing_attribute -->
+      <img bind:this={imgEl} class="opacity-0" />
+      <canvas bind:this={canvasEl} class="hidden"></canvas>
+    {/if}
   </div>
 </main>
