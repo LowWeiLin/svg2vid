@@ -179,7 +179,24 @@
 </script>
 
 <main>
-  <div class="flex flex-col items-center justify-center">
+  <div class="flex flex-col items-center justify-center relative">
+    <!-- GitHub link with SVG icon in top right -->
+    <a
+      href="https://lowweilin.github.io/svg2vid/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="absolute top-4 right-4 cursor-pointer transition-transform hover:scale-110"
+      title="View on GitHub"
+    >
+      <img
+        src="./svg2vid.svg"
+        alt="SVG2Vid Logo"
+        width="48"
+        height="48"
+        class="drop-shadow-md"
+      />
+    </a>
+
     <h1 class="m-8 text-5xl text-gray-900 text-center">
       Animated SVG to Video
     </h1>

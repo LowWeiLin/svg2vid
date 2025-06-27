@@ -63,9 +63,9 @@
       documentation, tutorials, and sharing with stakeholders — anywhere
       animated SVGs do not render.
     </p>
-    <img src="/sample.svg" alt="Sample SVG Animation" class="mt-4 w-full" />
+    <img src="./sample.svg" alt="Sample SVG Animation" class="mt-4 w-full" />
     <a
-      href="/sample.svg"
+      href="./sample.svg"
       download="sample.svg"
       class="inline-block mt-3 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200"
     >

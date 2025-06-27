@@ -1,47 +1,81 @@
-# Svelte + TS + Vite
+# SVG2Vid - Convert Animated SVGs to Video
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+A privacy-focused web application that converts animated SVG files to video formats entirely in your browser. No uploads, no server processing - everything runs client-side.
 
-## Recommended IDE Setup
+## Features
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+- 🔒 **Privacy-First**: All processing happens in your browser
+- ⚡ **Fast Conversion**: Client-side processing for instant results
+- 📄 **Multiple Formats**: Supports all video formats your browser can handle
+- 🎨 **Customizable**: Adjust dimensions, duration, framerate, and background
+- 📱 **Responsive**: Works on desktop and mobile devices
 
-## Need an official Svelte framework?
+## Perfect for Draw.io Users
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+Convert your animated Draw.io diagrams to videos for presentations, documentation, or sharing!
 
-## Technical considerations
+## Development
 
-**Why use this over SvelteKit?**
+### Prerequisites
+- Node.js 20 or higher
+- npm
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+### Getting Started
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open your browser to `http://localhost:5173`
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+### Building for Production
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```bash
+npm run build
 ```
+
+The built files will be in the `dist` directory.
+
+## Deployment
+
+This project is configured for automatic deployment to GitHub Pages using GitHub Actions.
+
+### Setup GitHub Pages Deployment
+
+1. Push your code to a GitHub repository
+2. Go to your repository's **Settings** > **Pages**
+3. Under **Source**, select **GitHub Actions**
+4. The deployment will trigger automatically on every push to the `main` branch
+
+The GitHub Actions workflow (`.github/workflows/deploy.yml`) will:
+- Build the project using Vite
+- Deploy the built files to GitHub Pages
+- Make your app available at `https://yourusername.github.io/svg2vid/`
+
+### Manual Deployment
+
+If you prefer manual deployment, you can build the project and deploy the `dist` folder to any static hosting service.
+
+## How It Works
+
+1. **Upload**: Select an animated SVG file
+2. **Configure**: Set video dimensions, duration, framerate, and background color
+3. **Convert**: The app creates a video by capturing frames of the animated SVG
+4. **Download**: Save the resulting video file
+
+## Browser Compatibility
+
+- Modern browsers with Canvas and MediaRecorder API support
+- Chrome, Firefox, Safari, Edge (latest versions)
+
+## Technical Stack
+
+- **Svelte 5**: Reactive UI framework
+- **TypeScript**: Type-safe JavaScript
+- **Vite**: Fast build tool and dev server
+- **TailwindCSS**: Utility-first CSS framework
