@@ -2,6 +2,13 @@
 
 A privacy-focused web application that converts animated SVG files to video formats entirely in your browser. No uploads, no server processing - everything runs client-side.
 
+
+Note:
+- Project is meant for learning svelte/tailwind on a personal pain point
+- Much of the code/README/copy/SVG/icons are AI generated
+- References https://github.com/lenra-io/svg-recorder - with fixes to make it work on chrome
+
+
 ## Features
 
 - 🔒 **Privacy-First**: All processing happens in your browser

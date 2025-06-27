@@ -182,7 +182,7 @@
   <div class="flex flex-col items-center justify-center relative">
     <!-- GitHub link with SVG icon in top right -->
     <a
-      href="https://lowweilin.github.io/svg2vid/"
+      href="https://github.com/LowWeiLin/svg2vid/"
       target="_blank"
       rel="noopener noreferrer"
       class="absolute top-4 right-4 cursor-pointer transition-transform hover:scale-110"
